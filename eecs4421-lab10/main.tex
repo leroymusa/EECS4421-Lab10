@@ -1,0 +1,177 @@
+\documentclass[11pt]{article}
+
+% ====== Packages ======
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{bookmark}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{amsmath, amssymb}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{parskip}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage[export]{adjustbox}
+\usepackage{tabularx,array}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X} % wrapped left-aligned column
+
+% ====== Hypersetup ======
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue,
+  pdfauthor={Leroy Musa},
+  pdftitle={EECS 4421 Lab 10 Report: Multiple-Agent Coordination (Boids)}
+}
+
+% ====== Graphics path + helpers ======
+\graphicspath{{./}{figures/}{imgs/}}
+% Name your screenshots like this to match the commands
+\newcommand{\ShotOne}{setting_01.png}
+\newcommand{\ShotFour}{setting_04.png}
+\newcommand{\ShotEight}{setting_08.png}
+\newcommand{\imgorplaceholder}[2]{%
+  \IfFileExists{#1}{\includegraphics[width=\linewidth]{#1}}{%
+    \fbox{\parbox[b][0.28\textheight][c]{0.95\linewidth}{\centering
+      \textbf{Missing image:}\\ \texttt{#1}\\[4pt]#2}}%
+  }%
+}
+
+% ====== Code listings ======
+\lstdefinestyle{code}{
+  language=bash,
+  basicstyle=\ttfamily\small,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  numbersep=8pt,
+  showstringspaces=false,
+  breaklines=true,
+  tabsize=2,
+  frame=single,
+  rulecolor=\color{black!20},
+  keywordstyle=\color{blue!70!black}\bfseries,
+  commentstyle=\color{magenta!60!black}\itshape,
+  stringstyle=\color{green!40!black},
+  xleftmargin=2em, framexleftmargin=2em
+}
+\lstset{style=code}
+
+% ====== Title Page ======
+\begin{document}
+\begin{titlepage}
+  \centering
+  \vspace*{1.5cm}
+  {\fontsize{26}{30}\selectfont \textbf{EECS 4421 Lab 10 Report}}\\[6pt]
+  {\Large \textbf{Multiple-Agent Coordination with the Boids Model}}\\[18pt]
+  {\large \textbf{Leroy Musa} \quad (219198761)}\\[12pt]
+
+  \vspace{8pt}
+  \textbf{References:}\\[2pt]
+  C.\,W. Reynolds, \emph{Flocks, Herds, and Schools: A Distributed Behavioral Model}, SIGGRAPH '87.\\
+  Online: \url{https://www.cs.toronto.edu/~dt/siggraph97-course/cwr87/}\\
+  Official: \url{https://dl.acm.org/doi/10.1145/37402.37406}\\
+  Implementation: \url{https://github.com/meznak/boids_py}
+
+  \vfill
+  \textbf{Abstract.} This lab explores emergent behaviour in Reynolds’ Boids by varying three parameters in a 2x2x2 grid:
+  \emph{max\_force} (1 vs 32), \emph{perception} ($\approx$12.582 vs $\approx$258), and \emph{crowding} (16 vs $\approx$232).
+  For each setting I produced a 10--15\,s clip and compiled them into a single video with title slides. This report documents
+  the setup and observations for all eight configurations.
+  \vfill
+\end{titlepage}
+
+% ====== Methods ======
+\section*{Method}
+\textbf{Setup.} The Boids simulation was run using the \texttt{boids\_py} Python implementation with \texttt{pygame}.
+I created a shell script to automate running the 8 required parameter configurations and recording each one for 15 seconds using \texttt{ffmpeg}.
+The final video deliverable was assembled by creating title cards for each clip and concatenating them.
+
+% ---- Parameter grid (Table A) ----
+\begin{table}[H]\centering
+\caption{Lab 10 parameter grid (8 runs)}
+\begin{tabular}{c|r|r|r}
+\hline
+\textbf{Clip} & \textbf{max\_force} & \textbf{perception} & \textbf{crowding} \\
+\hline
+01 & 1   & 12.582 & 16  \\
+02 & 1   & 12.582 & 232 \\
+03 & 1   & 258    & 16  \\
+04 & 1   & 258    & 232 \\
+05 & 32  & 12.582 & 16  \\
+06 & 32  & 12.582 & 232 \\
+07 & 32  & 258    & 16  \\
+08 & 32  & 258    & 232 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]\centering
+\caption{Exact CLI command for each run (executed from the \texttt{boids\_py} directory)}
+\scriptsize
+\setlength{\tabcolsep}{6pt}
+\begin{tabularx}{\linewidth}{c|L}
+\hline
+\textbf{Clip} & \textbf{Command} \\
+\hline
+01 & \texttt{\detokenize{python3 main.py --geometry 1280x720 --number 120 --max_force 1 --perception 12.582 --crowding 16}} \\
+02 & \texttt{\detokenize{python3 main.py --geometry 1280x720 --number 120 --max_force 1 --perception 12.582 --crowding 232}} \\
+03 & \texttt{\detokenize{python3 main.py --geometry 1280x720 --number 120 --max_force 1 --perception 258 --crowding 16}} \\
+04 & \texttt{\detokenize{python3 main.py --geometry 1280x720 --number 120 --max_force 1 --perception 258 --crowding 232}} \\
+05 & \texttt{\detokenize{python3 main.py --geometry 1280x720 --number 120 --max_force 32 --perception 12.582 --crowding 16}} \\
+06 & \texttt{\detokenize{python3 main.py --geometry 1280x720 --number 120 --max_force 32 --perception 12.582 --crowding 232}} \\
+07 & \texttt{\detokenize{python3 main.py --geometry 1280x720 --number 120 --max_force 32 --perception 258 --crowding 16}} \\
+08 & \texttt{\detokenize{python3 main.py --geometry 1280x720 --number 120 --max_force 32 --perception 258 --crowding 232}} \\
+\hline
+\end{tabularx}
+\end{table}
+
+
+% ====== Results: 8 settings ======
+\section*{Results: Emergent Behaviour by Setting}
+The interaction between steering ability (\textbf{max\_force}), awareness (\textbf{perception}), and tolerance for neighbors (\textbf{crowding}) produced distinct flocking behaviors. A higher \textbf{crowding} value corresponds to a higher tolerance for close proximity, leading to denser groups.
+
+\subsection*{1) max\_force=1, perception$\approx$12.582, crowding=16}
+\textbf{Observation: Disorganized \& Drifting.} The boids form small, independent, and loosely associated clusters. With low steering force and very limited perception, there is no overall group direction. The low crowding value ensures they maintain personal space, preventing dense clumping. The overall behavior is aimless and meandering.
+
+\subsection*{2) max\_force=1, perception$\approx$12.582, crowding$\approx$232}
+\textbf{Observation: Dense, Aimless Blobs.} The high tolerance for crowding causes the boids to form tight, dense clusters. However, because perception is still low, these clusters remain small and isolated from each other. The groups drift slowly and amoeba-like, with no unified flocking behavior.
+
+\subsection*{3) max\_force=1, perception$\approx$258, crowding=16}
+\textbf{Observation: Cohesive \& Majestic.} The high perception range allows all boids to sense the group's average heading, resulting in a single, unified flock. The low steering force leads to wide, graceful, sweeping turns. With a low crowding value, the boids are evenly spaced, giving the impression of a large, calm, migrating flock.
+
+\subsection*{4) max\_force=1, perception$\approx$258, crowding$\approx$232}
+\textbf{Observation: A Dense, Unified Organism.} Global awareness (high perception) merges with a high tolerance for density (high crowding). The result is a single, extremely dense swarm that moves as one fluid entity. It resembles a tightly packed school of fish moving with deliberate, coordinated grace.
+
+\subsection*{5) max\_force=32, perception$\approx$12.582, crowding=16}
+\textbf{Observation: Chaotic \& Jittery.} High steering force allows for sharp, instantaneous turns. When combined with very low perception, boids constantly make sudden, erratic movements to avoid their immediate neighbors. The swarm appears highly agitated and chaotic, like a panicked cloud of insects with no shared purpose.
+
+\subsection*{6) max\_force=32, perception$\approx$12.582, crowding$\approx$232}
+\textbf{Observation: Vibrating, Dense Clusters.} The boids form tight, dense clusters due to high crowding tolerance. The high max\_force and low perception cause individuals within these clusters to make constant, high-energy micro-adjustments. The clusters appear to vibrate or shimmer in place, unable to establish a clear direction.
+
+\subsection*{7) max\_force=32, perception$\approx$258, crowding=16}
+\textbf{Observation: Militaristic & Agile.} Global awareness meets high agility. The entire flock moves as one, capable of executing sharp, synchronized, instantaneous turns. The low crowding value keeps the boids in an orderly, spaced-out formation. The behavior resembles a squadron of fighter jets or a precision drill team.
+
+\subsection*{8) max\_force=32, perception$\approx$258, crowding$\approx$232}
+\textbf{Observation: Hyper-Reactive Superorganism.} This combination creates the most extreme behavior. The flock is a single, hyper-dense, super-reactive mass. It can change direction as one solid entity with frightening speed and precision. It appears less like a group of individuals and more like a single, powerful organism.
+
+% ====== Illustrative figures ======
+\section*{Illustrative Frames}
+\begin{figure}[H]\centering
+  \imgorplaceholder{\ShotOne}{Sample frame from Clip 01.}
+  \caption*{Setting 1: low max\_force, small perception, low crowding results in scattered, aimless clusters.}
+\end{figure}
+\begin{figure}[H]\centering
+  \imgorplaceholder{\ShotFour}{Sample frame from Clip 04.}
+  \caption*{Setting 4: low max\_force, large perception, high crowding creates a single, dense, cohesive swarm.}
+\end{figure}
+\begin{figure}[H]\centering
+  \imgorplaceholder{\ShotEight}{Sample frame from Clip 08.}
+  \caption*{Setting 8: high max\_force, large perception, high crowding creates a hyper-dense and highly reactive superorganism.}
+\end{figure}
+
+\end{document}
